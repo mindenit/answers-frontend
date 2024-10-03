@@ -14,7 +14,7 @@ RUN npm i -g pnpm
 
 COPY --link package.json pnpm-lock.yaml ./
 
-RUN pnpm i --prod
+RUN pnpm i
 
 COPY --link . .
 
