@@ -1,0 +1,38 @@
+{
+  "name": "client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@internationalized/date": "^3.5.5",
+    "@mindenit/ui": "0.1.9",
+    "@nuxt/icon": "^1.5.1",
+    "@nuxt/image": "^1.8.0",
+    "@nuxtjs/strapi": "^1.12.0",
+    "@vee-validate/nuxt": "^4.13.2",
+    "@vueuse/core": "^11.0.3",
+    "@vueuse/nuxt": "^11.0.3",
+    "katex": "^0.16.11",
+    "markdown-it": "^14.1.0",
+    "markdown-it-texmath": "^1.0.0",
+    "nuxt": "^3.13.0",
+    "qs": "^6.13.0",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@iconify-json/ph": "^1.2.0",
+    "@nuxtjs/color-mode": "^3.4.4",
+    "@nuxtjs/tailwindcss": "^6.12.1",
+    "@shikijs/markdown-it": "^1.20.0",
+    "@types/katex": "^0.16.7",
+    "@types/markdown-it": "^14.1.2",
+    "shiki": "^1.20.0"
+  }
+}
