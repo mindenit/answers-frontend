@@ -6,15 +6,15 @@ ARG PORT=3000
 
 ENV NODE_ENV=production
 
-WORKDIR /app
-
-RUN npm install -g pnpm
+WORKDIR /src
 
 FROM base as build
 
-COPY package.json pnpm-lock.yaml ./
+RUN npm i -g pnpm
 
-RUN pnpm install
+COPY --link package.json pnpm-lock.yaml ./
+
+RUN pnpm i --prod
 
 COPY --link . .
 
