@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from '@mindenit/ui';
 
-const user = useStrapiUser();
+// const user = useStrapiUser();
 </script>
 
 <template>
@@ -51,7 +51,7 @@ const user = useStrapiUser();
           <TooltipContent>Каталог</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
-      <TooltipProvider v-if="user">
+      <!-- <TooltipProvider v-if="user">
         <TooltipRoot>
           <TooltipTrigger as-child>
             <NuxtLink to="/create">
@@ -60,7 +60,7 @@ const user = useStrapiUser();
           </TooltipTrigger>
           <TooltipContent>Додати</TooltipContent>
         </TooltipRoot>
-      </TooltipProvider>
+      </TooltipProvider> -->
     </div>
 
     <div class="flex justify-end items-center">

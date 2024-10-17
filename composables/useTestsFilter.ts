@@ -13,7 +13,7 @@ export const useTestsFilter = ({
   facultyName,
 }: FilterArgs) => {
   const courseSpecification = (
-    courseNumber: Ref<string>,
+    courseNumber: Ref<string>
   ): Specification<Strapi4ResponseData<Test>> => {
     return {
       satisfies: (test) => {
@@ -27,7 +27,7 @@ export const useTestsFilter = ({
   };
 
   const subjectSpecification = (
-    subjectName: Ref<string>,
+    subjectName: Ref<string>
   ): Specification<Strapi4ResponseData<Test>> => {
     return {
       satisfies: (test) => {
@@ -49,14 +49,14 @@ export const useTestsFilter = ({
   };
 
   const facultySpecification = (
-    facultyName: Ref<string>,
+    facultyName: Ref<string>
   ): Specification<Strapi4ResponseData<Test>> => {
     return {
       satisfies: (test) => {
         if (!facultyName.value.length) return true;
 
         return test.attributes.faculties.data.some(
-          (faculty) => faculty.attributes.name === facultyName.value,
+          (faculty) => faculty.attributes.name === facultyName.value
         );
       },
     };
@@ -65,7 +65,7 @@ export const useTestsFilter = ({
   const testsSpecifications = multipleSpecifications(
     subjectSpecification(subjectName),
     courseSpecification(courseNumber),
-    facultySpecification(facultyName),
+    facultySpecification(facultyName)
   );
 
   const testFilter =
@@ -79,7 +79,7 @@ export const useTestsFilter = ({
 
   const areFiltersApplied = computed(() => {
     return [subjectName, courseNumber, facultyName].some(
-      (filter) => filter.value !== '',
+      (filter) => filter.value !== ''
     );
   });
 
