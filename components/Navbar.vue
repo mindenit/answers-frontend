@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from '@mindenit/ui';
 
-// const user = useStrapiUser();
+const user = useCookie('user');
 </script>
 
 <template>
@@ -25,7 +25,7 @@ import {
         <TooltipRoot>
           <TooltipTrigger as-child>
             <NuxtLink to="/">
-              <IconButton variant="ghost" icon="ph:compass" />
+              <IconButton variant="ghost" icon="ph:house" />
             </NuxtLink>
           </TooltipTrigger>
           <TooltipContent>Головна</TooltipContent>
@@ -51,7 +51,7 @@ import {
           <TooltipContent>Каталог</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
-      <!-- <TooltipProvider v-if="user">
+      <TooltipProvider v-if="user">
         <TooltipRoot>
           <TooltipTrigger as-child>
             <NuxtLink to="/create">
@@ -60,7 +60,27 @@ import {
           </TooltipTrigger>
           <TooltipContent>Додати</TooltipContent>
         </TooltipRoot>
-      </TooltipProvider> -->
+      </TooltipProvider>
+      <TooltipProvider v-if="user">
+        <TooltipRoot>
+          <TooltipTrigger as-child>
+            <NuxtLink to="/logout">
+              <IconButton variant="ghost" icon="ph:x" />
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>Вийти</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider>
+      <TooltipProvider v-if="!user">
+        <TooltipRoot>
+          <TooltipTrigger as-child>
+            <NuxtLink to="/login">
+              <IconButton variant="ghost" icon="ph:user" />
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>Увійти</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider>
     </div>
 
     <div class="flex justify-end items-center">

@@ -1,10 +1,21 @@
 import type {
+  ApiMessage,
   Course,
   Faculty,
+  LoginResponse,
   Question,
   TestRequest,
   TestResponse,
+  UserResponse,
 } from '~/types';
+
+export const authMessages = {
+  invalidEmailOrPassword: 'Invalid email or password',
+  userAlreadyExists: 'User with such email already exists',
+  userCreationFailed: 'User creation failed',
+  logoutSuccessful: 'Logout successful',
+  userNotFound: 'User with such id not found',
+};
 
 export async function getQuestions(options?: Object) {
   const config = useRuntimeConfig();
@@ -45,6 +56,22 @@ export async function getFaculties(requestOptions?: Object) {
   return { data, status, error, refresh, clear };
 }
 
+export async function getUserInfo() {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+
+  const { data, status, error, refresh, clear } =
+    await useAsyncData<UserResponse>(() =>
+      $fetch(`${config.public.apiBaseUrl}/me`, {
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+      })
+    );
+
+  return { data, status, error, refresh, clear };
+}
+// TODO: Rewrite this method
 export async function createTest(body: {
   name: string;
   isVerified: boolean;
@@ -64,7 +91,7 @@ export async function createTest(body: {
     return { error, status: 'error' };
   }
 }
-
+// TODO: Rewrite this method
 export async function createQuestion(body: Question) {
   const config = useRuntimeConfig();
   try {
@@ -76,4 +103,57 @@ export async function createQuestion(body: Question) {
   } catch (error) {
     return { error, status: 'error' };
   }
+}
+
+export async function login(payload: { email: string; password: string }) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } =
+    await useAsyncData<LoginResponse>(() =>
+      $fetch(`${config.public.apiBaseUrl}/login`, {
+        method: 'POST',
+        body: payload,
+      })
+    );
+  if (data.value !== null) {
+    const user = useCookie('user');
+    user.value = data.value!.access_token;
+  }
+  return { data, status, error, refresh, clear };
+}
+
+export async function signup(payload: {
+  username: string;
+  email: string;
+  password: string;
+}) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } =
+    await useAsyncData<UserResponse>(() =>
+      $fetch(`${config.public.apiBaseUrl}/signup`, {
+        method: 'POST',
+        body: payload,
+      })
+    );
+  if (!error.value) {
+    await login({
+      email: payload.email,
+      password: payload.password,
+    });
+  }
+  return { data, status, error, refresh, clear };
+}
+
+export async function logout() {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } =
+    await useAsyncData<ApiMessage>(() =>
+      $fetch(`${config.public.apiBaseUrl}/logout`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+      })
+    );
+  return { data, status, error, refresh, clear };
 }
