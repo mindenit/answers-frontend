@@ -4,6 +4,7 @@ import {
   FormLabel,
   Heading,
   IconButton,
+  Link,
   TextFieldInput,
   TextFieldRoot,
   TextFieldSlot,
@@ -122,14 +123,16 @@ useSeoMeta({
           </TextFieldSlot>
         </TextFieldRoot>
       </div>
-      <div class="flex w-full justify-start">
-        <p class="text-amaranth-500" v-if="error">{{ error }}</p>
-      </div>
-      <div class="">
-        Вже є акаунт?
-        <NuxtLink to="/login">Авторизуватись</NuxtLink>
+      <div class="flex w-full justify-start" v-if="error">
+        <p class="text-amaranth-500">{{ error }}</p>
       </div>
       <Button class="w-full" :disabled="isDisabled">Зареєструватись</Button>
+      <div>
+        Вже є акаунт?
+        <Link :asChild="true">
+          <NuxtLink to="/login">Авторизуватись</NuxtLink>
+        </Link>
+      </div>
     </form>
   </main>
 </template>
