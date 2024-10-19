@@ -51,7 +51,7 @@ onMounted(() => {
           <VerifiedBadge
             type="test"
             :mobileBadge="true"
-            v-if="test?.isVerified"
+            v-if="test?.isVerified === true"
           />
         </Heading>
       </div>

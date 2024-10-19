@@ -28,8 +28,8 @@ const handleSubmit = async () => {
     status,
     error: requestError,
   } = await login({
-    email: email.value,
-    password: password.value,
+    email: email.value.trim(),
+    password: password.value.trim(),
   });
 
   if (requestError) {

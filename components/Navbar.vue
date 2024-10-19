@@ -8,6 +8,7 @@ import {
 } from '@mindenit/ui';
 
 const user = useCookie('user');
+const userRole = useCookie('userRole');
 </script>
 
 <template>
@@ -61,6 +62,19 @@ const user = useCookie('user');
           <TooltipContent>Додати</TooltipContent>
         </TooltipRoot>
       </TooltipProvider> -->
+      <TooltipProvider v-if="user && userRole === 'admin'">
+        <TooltipRoot>
+          <TooltipTrigger as-child>
+            <NuxtLink to="/admin">
+              <IconButton
+                variant="ghost"
+                icon="ph:folder-simple-user-duotone"
+              />
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>Адмін панель</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider>
       <TooltipProvider v-if="user">
         <TooltipRoot>
           <TooltipTrigger as-child>

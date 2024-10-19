@@ -23,14 +23,9 @@ const { data: faculties, status: facultiesStatus } = await getFaculties({
   lazy: true,
 });
 
-const { data: tests, status: testsStatus } = await getTests(
-  {
-    verified: true,
-  },
-  {
-    watch: [currentPage],
-  }
-);
+const { data: tests, status: testsStatus } = await getTests(undefined, {
+  watch: [currentPage],
+});
 
 const { data: subjects, status: subjectsStatus } = await getSubjects();
 

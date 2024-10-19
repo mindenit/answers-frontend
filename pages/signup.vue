@@ -32,9 +32,9 @@ const handleSubmit = async () => {
     status,
     error: requestError,
   } = await signup({
-    username: login.value,
-    email: email.value,
-    password: password.value,
+    username: login.value.trim(),
+    email: email.value.trim(),
+    password: password.value.trim(),
   });
 
   if (requestError) {
