@@ -104,10 +104,14 @@ export async function getUserInfo(options?: AsyncDataOptions<UserResponse>) {
 
 export async function createTest(body: Test, options?: AsyncDataOptions<Test>) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Test>(() =>
     $fetch(`${config.public.apiBaseUrl}/tests`, {
       method: 'POST',
       body,
+      headers: {
+        Authorization: `Bearer ${user.value}`,
+      },
     })
   );
   return { data, status, error, refresh, clear };
@@ -120,12 +124,15 @@ export async function createQuestions(
   options?: Object
 ) {
   const config = useRuntimeConfig();
-
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData(
     () =>
       $fetch(`${config.public.apiBaseUrl}/tests/${testId}/questions`, {
         method: 'POST',
         body: questions,
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -137,12 +144,16 @@ export async function createUniversity(
   options?: AsyncDataOptions<University>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } =
     await useAsyncData<University>(
       () =>
         $fetch(`${config.public.apiBaseUrl}/universities`, {
           method: 'POST',
           body: payload,
+          headers: {
+            Authorization: `Bearer ${user.value}`,
+          },
         }),
       options
     );
@@ -154,11 +165,15 @@ export async function createFaculty(
   options?: AsyncDataOptions<Faculty>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Faculty>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/faculties`, {
         method: 'POST',
         body: payload,
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -170,11 +185,15 @@ export async function createCourse(
   options?: AsyncDataOptions<Course>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Course>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/courses`, {
         method: 'POST',
         body: payload,
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -186,11 +205,15 @@ export async function createSubject(
   options?: AsyncDataOptions<Subject>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Subject>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/subjects`, {
         method: 'POST',
         body: payload,
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -202,11 +225,15 @@ export async function deleteUniversity(
   options?: AsyncDataOptions<University>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } =
     await useAsyncData<University>(
       () =>
         $fetch(`${config.public.apiBaseUrl}/universities/${id}`, {
           method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${user.value}`,
+          },
         }),
       options
     );
@@ -218,10 +245,14 @@ export async function deleteCourse(
   options?: AsyncDataOptions<Course>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Course>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/courses/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -233,10 +264,14 @@ export async function deleteFaculty(
   options?: AsyncDataOptions<Faculty>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Faculty>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/faculties/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -248,10 +283,14 @@ export async function deleteSubject(
   options?: AsyncDataOptions<Subject>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Subject>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/subjects/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -263,10 +302,14 @@ export async function deleteTest(
   options?: AsyncDataOptions<Test>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Test>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/tests/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );
@@ -278,10 +321,14 @@ export async function deleteQuestion(
   options?: AsyncDataOptions<Question>
 ) {
   const config = useRuntimeConfig();
+  const user = useCookie('user');
   const { data, status, error, refresh, clear } = await useAsyncData<Question>(
     () =>
       $fetch(`${config.public.apiBaseUrl}/questions/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
       }),
     options
   );

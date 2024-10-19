@@ -32,7 +32,10 @@ const filteredQuestions = computed(() => {
       autofocus
     />
     <div class="mt-4 gap-2">
-      <div v-if="filteredQuestions?.length" class="flex flex-col gap-2">
+      <div
+        v-if="filteredQuestions?.length && query.length"
+        class="flex flex-col gap-2"
+      >
         <QuestionCard
           v-for="question in filteredQuestions"
           :key="question.id"
@@ -41,7 +44,11 @@ const filteredQuestions = computed(() => {
         >
         </QuestionCard>
       </div>
-      <FallbackCard v-if="status === 'pending'">
+      <FallbackCard
+        v-if="
+          status === 'pending' && !filteredQuestions?.length && query.length
+        "
+      >
         <Icon class="size-10" name="svg-spinners:180-ring" />
       </FallbackCard>
       <FallbackCard
@@ -52,7 +59,7 @@ const filteredQuestions = computed(() => {
         <Icon class="size-10" name="ph:info" />
         <Heading size="tiny">За вашим запитом нічого не знайдено</Heading>
       </FallbackCard>
-      <FallbackCard v-if="!query.length && !filteredQuestions?.length">
+      <FallbackCard v-if="!query.length">
         <Icon class="size-10" name="ph:info" />
         <Heading size="tiny">Введіть питання для пошуку</Heading>
       </FallbackCard>
