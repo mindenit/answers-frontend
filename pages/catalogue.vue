@@ -32,21 +32,27 @@ const { data: tests, status: testsStatus } = await getTests(
   }
 );
 
+const { data: subjects, status: subjectsStatus } = await getSubjects();
+
 const subjectName = ref('');
-const courseNumber = ref('');
-const facultyName = ref('');
+const courseId = ref('');
+const facultyId = ref('');
 
-// const { testFilter, resetFilters, areFiltersApplied } = useTestsFilter({
-//   subjectName,
-//   courseNumber,
-//   facultyName,
-// });
+const { testFilter, resetFilters, areFiltersApplied } = useTestsFilter({
+  subjectName,
+  courseId,
+  facultyId,
+  subjects,
+});
 
-// const filteredTest = computed(() => {
-//   if (!tests.value) return [];
-
-//   return testFilter.filter(tests.value);
-// });
+const filteredTest = computed(() => {
+  if (!tests.value) return [];
+  const filtered = testFilter.filter(tests.value.data);
+  if (!filtered.length) {
+    return [];
+  }
+  return filtered;
+});
 </script>
 <template>
   <div class="container mx-auto">
@@ -59,7 +65,7 @@ const facultyName = ref('');
         placeholder="Введіть предмет..."
         autofocus
       />
-      <SelectRoot v-model="courseNumber">
+      <SelectRoot v-model="courseId">
         <SelectTrigger
           class="w-full sm:w-[200px]"
           placeholder="Виберіть курс"
@@ -69,7 +75,7 @@ const facultyName = ref('');
             <SelectItem
               v-for="(course, index) in courses"
               :key="index"
-              :value="course.number.toString()"
+              :value="course.id!.toString()"
             >
               {{ course.number }} курс
             </SelectItem>
@@ -87,7 +93,7 @@ const facultyName = ref('');
         </SelectContent>
       </SelectRoot>
 
-      <SelectRoot v-model="facultyName">
+      <SelectRoot v-model="facultyId">
         <SelectTrigger
           class="w-full sm:w-[200px]"
           placeholder="Виберіть факультет"
@@ -97,7 +103,7 @@ const facultyName = ref('');
             <SelectItem
               v-for="(faculty, index) in faculties"
               :key="index"
-              :value="faculty.name"
+              :value="faculty.id!.toString()"
             >
               {{ faculty.name }}
             </SelectItem>
@@ -118,22 +124,30 @@ const facultyName = ref('');
         </SelectContent>
       </SelectRoot>
     </div>
-    <!-- <button
+    <button
       v-if="areFiltersApplied"
       class="inline-flex mb-3 text-fiord-400 items-center justify-start hover:text-royal-blue-500 gap-1 text-sm"
       @click="resetFilters"
     >
       <Icon class="size-5" name="ph:x-circle-fill" />
       Скинути фільтри
-    </button> -->
-    <div v-if="tests?.data.length" class="flex flex-col gap-y-3">
-      <TestCard v-for="test in tests.data" :key="test.id" :id="test.id" :test />
+    </button>
+    <div v-if="filteredTest?.length" class="flex flex-col gap-y-3">
+      <TestCard
+        v-for="test in filteredTest"
+        :key="test.id"
+        :id="test.id!"
+        :faculties="faculties!"
+        :courses="courses!"
+        :subjects="subjects!"
+        :test
+      />
     </div>
+
     <FallbackCard v-if="testsStatus === 'pending'">
       <Icon class="size-10" name="svg-spinners:180-ring" />
     </FallbackCard>
-    <!-- <FallbackCard v-if="tests?.data.length && !filteredTest.length"> -->
-    <FallbackCard v-if="tests?.data.length">
+    <FallbackCard v-if="tests?.data.length && !filteredTest.length">
       <Icon class="size-10" name="ph:info" />
       <Heading size="tiny">Тестів за вашим запитом не знайдено</Heading>
     </FallbackCard>

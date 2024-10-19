@@ -1,13 +1,25 @@
 <script lang="ts" setup>
 import { Badge, Text } from '@mindenit/ui';
-import type { Test } from '~/types';
+import type { Course, Faculty, Subject, Test } from '~/types';
 
-const props = defineProps<{ test: Test; id: number }>();
+const props = defineProps<{
+  test: Test;
+  id: number;
+  faculties: Faculty[];
+  courses: Course[];
+  subjects: Subject[];
+}>();
 
-const facultiesFallback = computed(() => {
-  return props.test.faculties.data.length > 1
-    ? `Факультети: ${props.test.faculties.data.map((f) => f.attributes.name).join(', ')}`
-    : `Факультет: ${props.test.faculties.data.at(0)?.attributes.name}`;
+const getFaculty = computed(() => {
+  return props.faculties.find((f) => f.id === props.test.facultyId);
+});
+
+const getSubject = computed(() => {
+  return props.subjects.find((s) => s.id === props.test.subjectId);
+});
+
+const getCourse = computed(() => {
+  return props.courses.find((c) => c.id === props.test.courseId);
 });
 </script>
 
@@ -27,9 +39,9 @@ const facultiesFallback = computed(() => {
     <div
       class="flex md:flex-nowrap mt-2 md:mt-0 flex-wrap items-center md:justify-end justify-center gap-3"
     >
-      <Badge>{{ facultiesFallback }}</Badge>
-      <Badge>Курс: {{ test.course.data.attributes.number }}</Badge>
-      <Badge>Предмет: {{ test.subject.data.attributes.brief }}</Badge>
+      <Badge>Факультет: {{ getFaculty?.name }}</Badge>
+      <Badge>Курс: {{ getCourse?.number }}</Badge>
+      <Badge>Предмет: {{ getSubject?.name }}</Badge>
     </div>
   </NuxtLink>
 </template>

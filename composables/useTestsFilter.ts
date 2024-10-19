@@ -1,84 +1,77 @@
-import type { Strapi4ResponseData } from '@nuxtjs/strapi';
-import type { Specification, Test } from '~/types';
+import type { Specification, Subject, Test } from '~/types';
 
 interface FilterArgs {
   subjectName: Ref<string>;
-  courseNumber: Ref<string>;
-  facultyName: Ref<string>;
+  courseId: Ref<string>;
+  facultyId: Ref<string>;
+  subjects: Ref<Subject[] | null>;
 }
 
 export const useTestsFilter = ({
   subjectName,
-  courseNumber,
-  facultyName,
+  courseId,
+  facultyId,
+  subjects,
 }: FilterArgs) => {
-  const courseSpecification = (
-    courseNumber: Ref<string>
-  ): Specification<Strapi4ResponseData<Test>> => {
+  const courseSpecification = (courseId: Ref<string>): Specification<Test> => {
     return {
       satisfies: (test) => {
-        if (!courseNumber.value.length) return true;
+        if (!courseId.value.length) return true;
 
-        return (
-          test.attributes.course.data.attributes.number === +courseNumber.value
-        );
+        return test.courseId === +courseId.value;
       },
     };
   };
 
   const subjectSpecification = (
     subjectName: Ref<string>
-  ): Specification<Strapi4ResponseData<Test>> => {
+  ): Specification<Test> => {
     return {
       satisfies: (test) => {
         if (!subjectName.value.length) return true;
 
-        const comparableName = subjectName.value.trim().toLowerCase();
+        if (subjects && subjects.value) {
+          const comparableName = subjectName.value.trim().toLowerCase();
+          const subject = subjects.value?.find((s) => s.id === test.subjectId);
 
-        return (
-          test.attributes.subject.data.attributes.brief
-            .toLowerCase()
-            .includes(comparableName) ||
-          test.attributes.subject.data.attributes.name
-            .trim()
-            .toLowerCase()
-            .includes(comparableName)
-        );
+          return (
+            (subject?.name.toLowerCase().includes(comparableName) ||
+              subject?.brief.toLowerCase().includes(comparableName)) ??
+            false
+          );
+        }
+        return false;
       },
     };
   };
 
   const facultySpecification = (
-    facultyName: Ref<string>
-  ): Specification<Strapi4ResponseData<Test>> => {
+    facultyId: Ref<string>
+  ): Specification<Test> => {
     return {
       satisfies: (test) => {
-        if (!facultyName.value.length) return true;
-
-        return test.attributes.faculties.data.some(
-          (faculty) => faculty.attributes.name === facultyName.value
-        );
+        if (!facultyId.value.length) return true;
+        return Number(test.facultyId) === Number(facultyId.value);
       },
     };
   };
 
   const testsSpecifications = multipleSpecifications(
     subjectSpecification(subjectName),
-    courseSpecification(courseNumber),
-    facultySpecification(facultyName)
+    courseSpecification(courseId),
+    facultySpecification(facultyId)
   );
 
-  const testFilter =
-    filterFactory<Strapi4ResponseData<Test>>(testsSpecifications);
+  const testFilter = filterFactory<Test>(testsSpecifications);
 
   const resetFilters = () => {
     subjectName.value = '';
-    courseNumber.value = '';
-    facultyName.value = '';
+    courseId.value = '';
+    facultyId.value = '';
   };
 
   const areFiltersApplied = computed(() => {
-    return [subjectName, courseNumber, facultyName].some(
+    return [subjectName, courseId, facultyId].some(
       (filter) => filter.value !== ''
     );
   });
