@@ -60,8 +60,19 @@ interface University extends BaseModel {
   brief: string;
 }
 
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
 interface LoginResponse {
   access_token: string;
+}
+
+interface SignupRequest {
+  username: string;
+  email: string;
+  password: string;
 }
 
 interface UserResponse extends BaseModel {
@@ -78,8 +89,10 @@ export type {
   ApiMessage,
   Course,
   Faculty,
+  LoginRequest,
   LoginResponse,
   Question,
+  SignupRequest,
   Subject,
   Test,
   TestMeta,
