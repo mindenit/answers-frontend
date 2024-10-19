@@ -55,6 +55,20 @@ interface TestRequest {
   universityId?: number;
 }
 
+interface TestInfoResponse extends BaseModel {
+  name: string;
+  isVerified: boolean;
+  universityId: number;
+  facultyId: number;
+  subjectId: number;
+  courseId: number;
+  course: Course;
+  questions: Question[];
+  faculty: Faculty;
+  university: University;
+  subject: Subject;
+}
+
 interface University extends BaseModel {
   name: string;
   brief: string;
@@ -95,6 +109,7 @@ export type {
   SignupRequest,
   Subject,
   Test,
+  TestInfoResponse,
   TestMeta,
   TestRequest,
   TestResponse,

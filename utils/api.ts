@@ -9,6 +9,7 @@ import type {
   SignupRequest,
   Subject,
   Test,
+  TestInfoResponse,
   TestRequest,
   TestResponse,
   University,
@@ -66,6 +67,30 @@ export async function getTests(
   return { data, status, error, refresh, clear };
 }
 
+export async function getTestInfo(
+  id: string | number,
+  options?: AsyncDataOptions<TestInfoResponse>
+) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } =
+    await useAsyncData<TestInfoResponse>(
+      () => $fetch(`${config.public.apiBaseUrl}/test/${id}`),
+      options
+    );
+  return { data, status, error, refresh, clear };
+}
+
+export async function getTestQuestions(
+  id: string | number,
+  options?: AsyncDataOptions<Question[]>
+) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData<
+    Question[]
+  >(() => $fetch(`${config.public.apiBaseUrl}/tests/${id}/questions`), options);
+  return { data, status, error, refresh, clear };
+}
+
 export async function getCourses(options?: AsyncDataOptions<Course[]>) {
   const config = useRuntimeConfig();
   const { data, status, error, refresh, clear } = await useAsyncData<Course[]>(
@@ -84,7 +109,10 @@ export async function getFaculties(options?: AsyncDataOptions<Faculty[]>) {
   return { data, status, error, refresh, clear };
 }
 
-export async function getUserInfo(options?: AsyncDataOptions<UserResponse>) {
+export async function getUserInfo(
+  token?: string,
+  options?: AsyncDataOptions<UserResponse>
+) {
   const config = useRuntimeConfig();
   const user = useCookie('user');
 
@@ -93,7 +121,7 @@ export async function getUserInfo(options?: AsyncDataOptions<UserResponse>) {
       () =>
         $fetch(`${config.public.apiBaseUrl}/me`, {
           headers: {
-            Authorization: `Bearer ${user.value}`,
+            Authorization: `Bearer ${user.value ? user.value : token}`,
           },
         }),
       options
@@ -117,19 +145,22 @@ export async function createTest(body: Test, options?: AsyncDataOptions<Test>) {
   return { data, status, error, refresh, clear };
 }
 
-// TODO: After the backend is fixed, types should be added here
 export async function createQuestions(
   testId: number | string,
   questions: Question[],
-  options?: Object
+  options?: AsyncDataOptions<Question[]>
 ) {
   const config = useRuntimeConfig();
   const user = useCookie('user');
-  const { data, status, error, refresh, clear } = await useAsyncData(
+  const { data, status, error, refresh, clear } = await useAsyncData<
+    Question[]
+  >(
     () =>
       $fetch(`${config.public.apiBaseUrl}/tests/${testId}/questions`, {
         method: 'POST',
-        body: questions,
+        body: {
+          questions,
+        },
         headers: {
           Authorization: `Bearer ${user.value}`,
         },
@@ -349,9 +380,18 @@ export async function login(
         }),
       options
     );
+  const user = useCookie('user');
+  const userRole = useCookie('userRole');
   if (data.value !== null) {
-    const user = useCookie('user');
     user.value = data.value!.access_token;
+    const { data: userResponse, status: userStatus } = await getUserInfo(
+      data.value.access_token
+    );
+    userRole.value = userResponse.value?.role;
+  }
+  if (status.value === 'error' || error.value) {
+    user.value = '';
+    userRole.value = '';
   }
   return { data, status, error, refresh, clear };
 }
@@ -376,12 +416,17 @@ export async function signup(
       password: payload.password,
     });
   }
+  const userRole = useCookie('userRole');
+  if (status.value === 'success') {
+    userRole.value = data.value?.role;
+  }
   return { data, status, error, refresh, clear };
 }
 
 export async function logout(options?: AsyncDataOptions<ApiMessage>) {
   const config = useRuntimeConfig();
   const user = useCookie('user');
+  const userRole = useCookie('userRole');
   const { data, status, error, refresh, clear } =
     await useAsyncData<ApiMessage>(
       () =>
@@ -393,5 +438,9 @@ export async function logout(options?: AsyncDataOptions<ApiMessage>) {
         }),
       options
     );
+  if (status.value === 'success') {
+    user.value = '';
+    userRole.value = '';
+  }
   return { data, status, error, refresh, clear };
 }

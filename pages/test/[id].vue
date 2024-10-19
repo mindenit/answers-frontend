@@ -1,30 +1,17 @@
 <script lang="ts" setup>
 import { Heading } from '@mindenit/ui';
-import type { Test } from '~/types';
 
 const route = useRoute();
-const { findOne } = useStrapi();
 
-const { data: test } = await useAsyncData(
-  'tests',
-  () =>
-    findOne<Test>('tests', route.params.id as string, {
-      populate: [
-        'questions',
-        'questions.answerPhoto',
-        'questions.questionPhoto',
-      ],
-    }),
-  {},
-);
+const { data: test } = await getTestInfo(route.params.id.toString());
 
 const currentQuestion = ref('');
 
 const { markdown } = useMarkdown();
 
 useSeoMeta({
-  title: `Тест: ${test.value?.data.attributes.name} | Answers`,
-  description: `Відповіді на тест "${test.value?.data.attributes.name}"`,
+  title: `Тест: ${test.value?.name} | Answers`,
+  description: `Відповіді на тест "${test.value?.name}"`,
 });
 
 onMounted(() => {
@@ -39,7 +26,7 @@ onMounted(() => {
     {
       rootMargin: '0px 0px -70% 0px',
       threshold: 0, //
-    },
+    }
   );
   document.querySelectorAll('.question').forEach((element) => {
     observer.observe(element);
@@ -49,7 +36,7 @@ onMounted(() => {
 
 <template>
   <div class="container">
-    <div v-if="!test?.data">
+    <div v-if="!test">
       <Heading size="medium" class="text-center">Сталася помилка</Heading>
     </div>
     <div v-else>
@@ -60,11 +47,11 @@ onMounted(() => {
           size="medium"
           class="mb-4 flex items-center gap-2 flex-col text-center"
         >
-          {{ test?.data.attributes.name }}
+          {{ test?.name }}
           <VerifiedBadge
             type="test"
             :mobileBadge="true"
-            v-if="test?.data.attributes.verified"
+            v-if="test?.isVerified"
           />
         </Heading>
       </div>
@@ -75,14 +62,13 @@ onMounted(() => {
         >
           <div class="flex flex-col gap-1">
             <a
-              v-for="{ id, attributes: question } in test?.data.attributes
-                .questions.data"
-              :key="id"
-              :href="`#${id}`"
+              v-for="question in test.questions"
+              :key="question.id"
+              :href="`#${question.id}`"
               :class="{
                 'dark:text-white border dark:border-fiord-700 dark:bg-fiord-900 bg-fiord-100':
-                  id.toString() === currentQuestion,
-                'text-gray-700': id.toString() !== currentQuestion,
+                question.id!.toString() === currentQuestion,
+                'text-gray-700': question.id!.toString() !== currentQuestion,
               }"
               class="w-full overflow-hidden overflow-ellipsis text-nowrap rounded-lg dark:hover:bg-fiord-900 hover:bg-fiord-100 p-2 transition-all"
               v-html="markdown.render(question.name)"
@@ -94,12 +80,11 @@ onMounted(() => {
           class="flex flex-col gap-2 w-full lg:pl-2 lg:border-l border-fiord-300 dark:border-fiord-700"
         >
           <QuestionCard
-            v-for="{ id, attributes: question } in test?.data.attributes
-              .questions.data"
-            :key="id"
+            v-for="question in test.questions"
+            :key="question.id"
             class="question"
-            :id
-            :questionId="id"
+            :id="question.id"
+            :questionId="question.id"
             :question
           >
           </QuestionCard>

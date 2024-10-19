@@ -104,7 +104,7 @@ const onClick = async () => {
   const { data, status, error } = await createQuestions(
     selectedTest.value,
     blocks.value.map((item) => ({
-      name: item.title,
+      name: item.title.trim(),
       isVerified: true,
       answer: item.answers.toString(),
     }))
@@ -128,7 +128,10 @@ const onReloadClick = async () => {
 };
 
 const sendUniversityInfo = async () => {
-  const { data, status } = await createUniversity(universityData);
+  const { data, status } = await createUniversity({
+    name: universityData.name.trim(),
+    brief: universityData.brief.trim(),
+  });
   if (status.value === 'success') {
     universityData.name = '';
     universityData.brief = '';
@@ -137,7 +140,7 @@ const sendUniversityInfo = async () => {
 
 const sendFacultyInfo = async () => {
   const { data, status } = await createFaculty({
-    name: facultyData.name,
+    name: facultyData.name.trim(),
     universityId: Number(facultyData.universityId),
   });
   if (status.value === 'success') {
