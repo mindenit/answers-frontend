@@ -20,7 +20,7 @@ import {
 } from '@mindenit/ui';
 
 definePageMeta({
-  middleware: 'auth',
+  // middleware: 'auth',
 });
 
 useSeoMeta({

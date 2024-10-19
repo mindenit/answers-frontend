@@ -1,5 +1,5 @@
 interface BaseModel {
-  id: number;
+  id?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -32,6 +32,7 @@ interface Test extends BaseModel {
   facultyId: number;
   courseId: number;
   subjectId: number;
+  universityId: number;
 }
 
 interface TestMeta {
@@ -51,6 +52,7 @@ interface TestRequest {
   verified?: boolean;
   facultyId?: number;
   courseId?: number;
+  universityId?: number;
 }
 
 interface University extends BaseModel {
@@ -64,7 +66,7 @@ interface LoginResponse {
 
 interface UserResponse extends BaseModel {
   username: string;
-  role: string;
+  role: 'admin' | 'user';
   email: string;
 }
 

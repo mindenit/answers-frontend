@@ -4,8 +4,10 @@ import type {
   Faculty,
   LoginResponse,
   Question,
+  Subject,
   TestRequest,
   TestResponse,
+  University,
   UserResponse,
 } from '~/types';
 
@@ -16,6 +18,23 @@ export const authMessages = {
   logoutSuccessful: 'Logout successful',
   userNotFound: 'User with such id not found',
 };
+
+export async function getSubjects(options?: Object) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData<Subject[]>(
+    () => $fetch(`${config.public.apiBaseUrl}/subjects`),
+    options
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function getUniversities(options?: Object) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData<
+    University[]
+  >(() => $fetch(`${config.public.apiBaseUrl}/universities`), options);
+  return { data, status, error, refresh, clear };
+}
 
 export async function getQuestions(options?: Object) {
   const config = useRuntimeConfig();
@@ -71,7 +90,7 @@ export async function getUserInfo() {
 
   return { data, status, error, refresh, clear };
 }
-// TODO: Rewrite this method
+
 export async function createTest(body: {
   name: string;
   isVerified: boolean;
@@ -81,28 +100,132 @@ export async function createTest(body: {
   courseId: number;
 }) {
   const config = useRuntimeConfig();
-  try {
-    const response = await $fetch(`${config.public.apiBaseUrl}/tests`, {
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/tests`, {
       method: 'POST',
       body,
-    });
-    return { data: response, status: 'success' };
-  } catch (error) {
-    return { error, status: 'error' };
-  }
+    })
+  );
+  return { data, status, error, refresh, clear };
 }
-// TODO: Rewrite this method
-export async function createQuestion(body: Question) {
+
+export async function createQuestions(
+  testId: number | string,
+  questions: Question[]
+) {
   const config = useRuntimeConfig();
-  try {
-    const response = await $fetch(`${config.public.apiBaseUrl}/questions`, {
+
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/tests/${testId}/questions`, {
       method: 'POST',
-      body,
-    });
-    return { data: response, status: 'success' };
-  } catch (error) {
-    return { error, status: 'error' };
-  }
+      body: questions,
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function createUniversity(payload: University) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/universities`, {
+      method: 'POST',
+      body: payload,
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function createFaculty(payload: Faculty) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/faculties`, {
+      method: 'POST',
+      body: payload,
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function createCourse(payload: Course) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/courses`, {
+      method: 'POST',
+      body: payload,
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function createSubject(payload: Subject) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/subjects`, {
+      method: 'POST',
+      body: payload,
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function deleteUniversity(id: string | number) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/universities/${id}`, {
+      method: 'DELETE',
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function deleteCourse(id: string | number) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/courses/${id}`, {
+      method: 'DELETE',
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function deleteFaculty(id: string | number) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/faculties/${id}`, {
+      method: 'DELETE',
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function deleteSubject(id: string | number) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/subjects/${id}`, {
+      method: 'DELETE',
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function deleteTest(id: string | number) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/tests/${id}`, {
+      method: 'DELETE',
+    })
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function deleteQuestion(id: string | number) {
+  const config = useRuntimeConfig();
+  const { data, status, error, refresh, clear } = await useAsyncData(() =>
+    $fetch(`${config.public.apiBaseUrl}/questions/${id}`, {
+      method: 'DELETE',
+    })
+  );
+  return { data, status, error, refresh, clear };
 }
 
 export async function login(payload: { email: string; password: string }) {
