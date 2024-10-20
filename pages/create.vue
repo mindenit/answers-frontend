@@ -10,38 +10,26 @@ import {
   Text,
   TextAreaInput,
   TextAreaRoot,
+  ToggleGroupItem,
+  ToggleGroupRoot,
   TooltipContent,
   TooltipProvider,
   TooltipRoot,
   TooltipTrigger,
   type TextAreaInputComponent,
-  ToggleGroupRoot,
-  ToggleGroupItem,
 } from '@mindenit/ui';
-import type { Strapi4ResponseMany } from '@nuxtjs/strapi';
-import type { Question, Test } from '~/types';
 
 definePageMeta({
-  middleware: 'auth',
+  // middleware: 'auth',
 });
 
 useSeoMeta({
   title: 'Додати | Answers',
 });
 
-const { find, create, findOne, update } = useStrapi();
 const router = useRouter();
 
-const { data: tests, status: testsStatus } = await useAsyncData(
-  'verified-tests',
-  () =>
-    find<Test>('tests', {
-      sort: ['createdAt:desc'],
-      filters: {
-        verified: { $eq: true },
-      },
-    }),
-);
+const { data: tests, status: testsStatus } = await getTests();
 
 const { markdown } = useMarkdown();
 const editorMode = ref<'edit' | 'preview'>('edit');
@@ -59,20 +47,19 @@ const isSubmitDisabled = computed(() => {
     !selectedTest.value.length ||
     !blocks.value.length ||
     blocks.value.some(
-      (block) => !block.title.trim().length || !block.answers.length,
+      (block) => !block.title.trim().length || !block.answers.length
     )
   );
 });
 
 const onClick = async () => {
   for (let i = 0; i < blocks.value.length; i++) {
-    await create<Question>('questions', {
-      name: blocks.value[i].title,
-      verified: false,
-      answer: blocks.value[i].answers.toString(),
-      // @ts-ignore
-      test: +selectedTest.value,
-    });
+    // await createQuestion({
+    //   name: blocks.value[i].title,
+    //   answer: blocks.value[i].answers.toString(),
+    //   isVerified: false,
+    //   testId: +selectedTest.value
+    // })
   }
 
   inputValue.value = '';
@@ -104,7 +91,7 @@ watch([alt_1, alt_2], () => {
               :key="index"
               :value="test.id.toString()"
             >
-              {{ test.attributes.name }}
+              {{ test.name }}
             </SelectItem>
           </template>
           <span v-else class="p-3 text-center">
@@ -177,8 +164,9 @@ watch([alt_1, alt_2], () => {
         <QuestionCard
           v-for="(block, index) in blocks"
           :question="{
+            id: index,
             name: block.title,
-            verified: false,
+            isVerified: false,
             answer: block.answers[0],
           }"
           :key="index"

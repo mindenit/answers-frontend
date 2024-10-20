@@ -7,7 +7,8 @@ import {
   TooltipTrigger,
 } from '@mindenit/ui';
 
-const user = useStrapiUser();
+const user = useCookie('user');
+const userRole = useCookie('userRole');
 </script>
 
 <template>
@@ -19,13 +20,13 @@ const user = useStrapiUser();
     </div>
 
     <div
-      class="z-50 flex justify-center items-center h-14 px-2 bg-fiord-50 border-fiord-300 dark:bg-fiord-900 rounded-xl border dark:border-fiord-700 gap-1 max-md:fixed max-md:bottom-4 max-md:left-1/2 max-md:transform max-md:-translate-x-1/2"
+      class="z-[29] flex justify-center items-center h-14 px-2 bg-fiord-50 border-fiord-300 dark:bg-fiord-900 rounded-xl border dark:border-fiord-700 gap-1 max-md:fixed max-md:bottom-4 max-md:left-1/2 max-md:transform max-md:-translate-x-1/2"
     >
       <TooltipProvider>
         <TooltipRoot>
           <TooltipTrigger as-child>
             <NuxtLink to="/">
-              <IconButton variant="ghost" icon="ph:compass" />
+              <IconButton variant="ghost" icon="ph:house" />
             </NuxtLink>
           </TooltipTrigger>
           <TooltipContent>Головна</TooltipContent>
@@ -51,7 +52,7 @@ const user = useStrapiUser();
           <TooltipContent>Каталог</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
-      <TooltipProvider v-if="user">
+      <!-- <TooltipProvider v-if="user">
         <TooltipRoot>
           <TooltipTrigger as-child>
             <NuxtLink to="/create">
@@ -59,6 +60,39 @@ const user = useStrapiUser();
             </NuxtLink>
           </TooltipTrigger>
           <TooltipContent>Додати</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider> -->
+      <TooltipProvider v-if="user && userRole === 'admin'">
+        <TooltipRoot>
+          <TooltipTrigger as-child>
+            <NuxtLink to="/admin">
+              <IconButton
+                variant="ghost"
+                icon="ph:folder-simple-user-duotone"
+              />
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>Адмін панель</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider>
+      <TooltipProvider v-if="user">
+        <TooltipRoot>
+          <TooltipTrigger as-child>
+            <NuxtLink to="/logout">
+              <IconButton variant="ghost" icon="ph:x" />
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>Вийти</TooltipContent>
+        </TooltipRoot>
+      </TooltipProvider>
+      <TooltipProvider v-if="!user">
+        <TooltipRoot>
+          <TooltipTrigger as-child>
+            <NuxtLink to="/login">
+              <IconButton variant="ghost" icon="ph:user" />
+            </NuxtLink>
+          </TooltipTrigger>
+          <TooltipContent>Увійти</TooltipContent>
         </TooltipRoot>
       </TooltipProvider>
     </div>

@@ -4,7 +4,6 @@ import type { Question } from '~/types';
 
 interface Props {
   question: Omit<Question, 'publishedAt' | 'createdAt' | 'updatedAt'>;
-  questionId?: number;
   showTestInfo?: boolean;
 }
 
@@ -19,11 +18,14 @@ const answerParsed = computed(() => markdown.render(props.question.answer));
 </script>
 <template>
   <div
-    class="flex flex-col dark:bg-fiord-900 bg-fiord-50 w-full h-fit p-3 rounded-xl border border-fiord-300 dark:border-fiord-700 gap-2"
+    class="flex flex-col dark:bg-fiord-900 bg-fiord-50 h-fit p-3 rounded-xl border border-fiord-300 dark:border-fiord-700 gap-2 w-full"
   >
-    <div class="flex items-center gap-2 justify-between" v-if="questionId">
-      <Text size="subtitle">ID Питання: {{ questionId }} </Text>
-      <VerifiedBadge type="question" v-if="props.question.verified" />
+    <div
+      class="flex items-center gap-2 justify-between"
+      v-if="props.question.id"
+    >
+      <Text size="subtitle">ID Питання: {{ props.question.id }} </Text>
+      <VerifiedBadge type="question" v-if="props.question.isVerified" />
     </div>
     <div class="flex items-center gap-2" v-html="titleParsed" />
     <div
@@ -33,9 +35,7 @@ const answerParsed = computed(() => markdown.render(props.question.answer));
       <div v-html="answerParsed" />
     </div>
     <Text size="subtitle" v-if="props.showTestInfo">
-      <NuxtLink :to="`/test/${question.test.data.id}`">
-        Тест: {{ question.test.data.attributes.name }}
-      </NuxtLink>
+      <NuxtLink :to="`/test/${question.testId}`"> Перейти до тесту </NuxtLink>
     </Text>
   </div>
 </template>

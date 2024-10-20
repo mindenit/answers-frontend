@@ -14,12 +14,16 @@ const router = useRouter();
 
 const email = ref('');
 const password = ref('');
+const login = ref('');
 const error = ref<string | null>();
 
 const { eyeIcon, inputType, toggleVisibility } = usePasswordVisibility();
 
 const isDisabled = computed(
-  () => !email.value.trim().length && !password.value.trim().length
+  () =>
+    !email.value.trim().length &&
+    !password.value.trim().length &&
+    !login.value.trim().length
 );
 
 const handleSubmit = async () => {
@@ -27,16 +31,19 @@ const handleSubmit = async () => {
     data,
     status,
     error: requestError,
-  } = await login({
+  } = await signup({
+    username: login.value.trim(),
     email: email.value.trim(),
     password: password.value.trim(),
   });
 
   if (requestError) {
     switch (requestError.value?.data.message) {
-      case authMessages.invalidEmailOrPassword:
-        error.value = 'Невірна пошта або пароль';
+      case authMessages.userAlreadyExists:
+        error.value = 'Цей користувач вже зареєстрований';
         break;
+      case authMessages.userCreationFailed:
+        error.value = 'Сталася помилка під час створення користувача';
       default:
         error.value = 'Сталася помилка';
         break;
@@ -49,7 +56,7 @@ const handleSubmit = async () => {
 };
 
 useSeoMeta({
-  title: 'Логін | Answers',
+  title: 'Реєстрація | Answers',
 });
 </script>
 
@@ -59,7 +66,23 @@ useSeoMeta({
       class="flex flex-col items-center justify-center w-[400px] h-fit space-y-4 rounded-xl dark:bg-fiord-900 p-5 border dark:border-fiord-700"
       @submit.prevent="handleSubmit"
     >
-      <Heading size="medium">Логін</Heading>
+      <Heading size="medium">Реєстрація</Heading>
+      <div class="flex flex-col w-full gap-2">
+        <FormLabel for="login">Логін</FormLabel>
+        <TextFieldRoot>
+          <TextFieldSlot>
+            <Icon name="ph:envelope-simple" />
+          </TextFieldSlot>
+          <TextFieldInput
+            v-model="login"
+            name="login"
+            id="login"
+            type="text"
+            placeholder="Введіть Ваш логін"
+            autofocus
+          />
+        </TextFieldRoot>
+      </div>
       <div class="flex flex-col w-full gap-2">
         <FormLabel for="email">Електронна пошта</FormLabel>
         <TextFieldRoot>
@@ -72,7 +95,6 @@ useSeoMeta({
             id="email"
             type="email"
             placeholder="Введіть пошту"
-            autofocus
           />
         </TextFieldRoot>
       </div>
@@ -104,11 +126,11 @@ useSeoMeta({
       <div class="flex w-full justify-start" v-if="error">
         <p class="text-amaranth-500">{{ error }}</p>
       </div>
-      <Button class="w-full" :disabled="isDisabled">Увійти</Button>
+      <Button class="w-full" :disabled="isDisabled">Зареєструватись</Button>
       <div>
-        Немає акаунту?
+        Вже є акаунт?
         <Link :asChild="true">
-          <NuxtLink to="/signup">Зареєструватись</NuxtLink>
+          <NuxtLink to="/login">Авторизуватись</NuxtLink>
         </Link>
       </div>
     </form>

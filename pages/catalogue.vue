@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 import {
-  Heading,
-  Pagination,
   SearchField,
   SelectContent,
   SelectItem,
@@ -10,61 +8,45 @@ import {
   Text,
 } from '@mindenit/ui';
 import { PAGE_SIZE } from '~/constants';
-import type { Course, Faculty, Test } from '~/types';
 
 useSeoMeta({
   title: 'Каталог | Answers',
 });
 
-const { find } = useStrapi();
-
 const currentPage = ref(1);
 
-const { data: courses, status: coursesStatus } = await useAsyncData(
-  'courses',
-  () => find<Course>('courses'),
-  { lazy: true },
-);
+const { data: courses, status: coursesStatus } = await getCourses({
+  lazy: true,
+});
 
-const { data: faculties, status: facultiesStatus } = await useAsyncData(
-  'faculties',
-  () => find<Faculty>('faculties'),
-  { lazy: true },
-);
+const { data: faculties, status: facultiesStatus } = await getFaculties({
+  lazy: true,
+});
 
-const { data: tests, status: testsStatus } = await useAsyncData(
-  'verified-tests',
-  () =>
-    find<Test>('tests', {
-      populate: ['subject', 'course', 'faculties'],
-      pagination: {
-        page: currentPage.value,
-        pageSize: PAGE_SIZE,
-      },
-      sort: ['createdAt:desc'],
-      filters: {
-        verified: { $eq: true },
-      },
-    }),
-  {
-    watch: [currentPage],
-  },
-);
+const { data: tests, status: testsStatus } = await getTests(undefined, {
+  watch: [currentPage],
+});
+
+const { data: subjects, status: subjectsStatus } = await getSubjects();
 
 const subjectName = ref('');
-const courseNumber = ref('');
-const facultyName = ref('');
+const courseId = ref('');
+const facultyId = ref('');
 
 const { testFilter, resetFilters, areFiltersApplied } = useTestsFilter({
   subjectName,
-  courseNumber,
-  facultyName,
+  courseId,
+  facultyId,
+  subjects,
 });
 
 const filteredTest = computed(() => {
-  if (!tests.value?.data) return [];
-
-  return testFilter.filter(tests.value.data);
+  if (!tests.value) return [];
+  const filtered = testFilter.filter(tests.value.data);
+  if (!filtered.length) {
+    return [];
+  }
+  return filtered;
 });
 </script>
 <template>
@@ -78,26 +60,23 @@ const filteredTest = computed(() => {
         placeholder="Введіть предмет..."
         autofocus
       />
-      <SelectRoot v-model="courseNumber">
+      <SelectRoot v-model="courseId">
         <SelectTrigger
           class="w-full sm:w-[200px]"
           placeholder="Виберіть курс"
         />
         <SelectContent class="">
-          <template v-if="courses?.data.length">
+          <template v-if="courses?.length">
             <SelectItem
-              v-for="({ attributes: course }, index) in courses.data"
+              v-for="(course, index) in courses"
               :key="index"
-              :value="course.number.toString()"
+              :value="course.id!.toString()"
             >
               {{ course.number }} курс
             </SelectItem>
           </template>
           <span v-else class="p-3 text-center">
-            <Text
-              v-show="!courses?.data.length"
-              size="subtitle"
-              class="select-none"
+            <Text v-show="!courses?.length" size="subtitle" class="select-none"
               >Курси відсутні</Text
             >
             <Icon
@@ -109,24 +88,24 @@ const filteredTest = computed(() => {
         </SelectContent>
       </SelectRoot>
 
-      <SelectRoot v-model="facultyName">
+      <SelectRoot v-model="facultyId">
         <SelectTrigger
           class="w-full sm:w-[200px]"
           placeholder="Виберіть факультет"
         />
         <SelectContent>
-          <template v-if="faculties?.data.length">
+          <template v-if="faculties?.length">
             <SelectItem
-              v-for="({ attributes: faculty }, index) in faculties.data"
+              v-for="(faculty, index) in faculties"
               :key="index"
-              :value="faculty.name"
+              :value="faculty.id!.toString()"
             >
               {{ faculty.name }}
             </SelectItem>
           </template>
           <span v-else class="p-3 text-center">
             <Text
-              v-show="!faculties?.data.length"
+              v-show="!faculties?.length"
               size="subtitle"
               class="select-none"
               >Факультети відсутні</Text
@@ -148,14 +127,18 @@ const filteredTest = computed(() => {
       <Icon class="size-5" name="ph:x-circle-fill" />
       Скинути фільтри
     </button>
-    <div v-if="filteredTest.length" class="flex flex-col gap-y-3">
+    <div v-if="filteredTest?.length" class="flex flex-col gap-y-3">
       <TestCard
-        v-for="{ id, attributes: test } in filteredTest"
-        :key="id"
-        :id
+        v-for="test in filteredTest"
+        :key="test.id"
+        :id="test.id!"
+        :faculties="faculties!"
+        :courses="courses!"
+        :subjects="subjects!"
         :test
       />
     </div>
+
     <FallbackCard v-if="testsStatus === 'pending'">
       <Icon class="size-10" name="svg-spinners:180-ring" />
     </FallbackCard>
@@ -168,13 +151,13 @@ const filteredTest = computed(() => {
       <Heading size="tiny">Нажаль, тестів ще немає</Heading>
     </FallbackCard>
     <div
-      v-if="getPagesCount(tests?.meta.pagination.total) > 1"
+      v-if="getPagesCount(tests?.meta.count) > 1"
       class="inline-flex w-full items-center justify-center mt-4"
     >
       <Pagination
         v-model:page="currentPage"
         :items-per-page="PAGE_SIZE"
-        :total="tests?.meta.pagination.total"
+        :total="tests?.meta.count"
       />
     </div>
   </div>
