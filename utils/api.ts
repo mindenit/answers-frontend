@@ -366,6 +366,133 @@ export async function deleteQuestion(
   return { data, status, error, refresh, clear };
 }
 
+export async function editUniversity(
+  id: string | number,
+  payload: University,
+  options?: AsyncDataOptions<University>
+) {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } =
+    await useAsyncData<University>(
+      () =>
+        $fetch(`${config.public.apiBaseUrl}/universities/${id}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${user.value}`,
+          },
+          body: payload,
+        }),
+      options
+    );
+  return { data, status, error, refresh, clear };
+}
+
+export async function editCourse(
+  id: string | number,
+  payload: Course,
+  options?: AsyncDataOptions<Course>
+) {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } = await useAsyncData<Course>(
+    () =>
+      $fetch(`${config.public.apiBaseUrl}/courses/${id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+        body: payload,
+      }),
+    options
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function editFaculty(
+  id: string | number,
+  payload: Faculty,
+  options?: AsyncDataOptions<Faculty>
+) {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } = await useAsyncData<Faculty>(
+    () =>
+      $fetch(`${config.public.apiBaseUrl}/faculties/${id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+        body: payload,
+      }),
+    options
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function editSubject(
+  id: string | number,
+  payload: Subject,
+  options?: AsyncDataOptions<Subject>
+) {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } = await useAsyncData<Subject>(
+    () =>
+      $fetch(`${config.public.apiBaseUrl}/subjects/${id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+        body: payload,
+      }),
+    options
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function editTest(
+  id: string | number,
+  payload: Test,
+  options?: AsyncDataOptions<Test>
+) {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } = await useAsyncData<Test>(
+    () =>
+      $fetch(`${config.public.apiBaseUrl}/tests/${id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+        body: payload,
+      }),
+    options
+  );
+  return { data, status, error, refresh, clear };
+}
+
+export async function editQuestion(
+  id: string | number,
+  payload: Question,
+  options?: AsyncDataOptions<Question>
+) {
+  const config = useRuntimeConfig();
+  const user = useCookie('user');
+  const { data, status, error, refresh, clear } = await useAsyncData<Question>(
+    () =>
+      $fetch(`${config.public.apiBaseUrl}/questions/${id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${user.value}`,
+        },
+        body: payload,
+      }),
+    options
+  );
+  return { data, status, error, refresh, clear };
+}
+
 export async function login(
   payload: LoginRequest,
   options?: AsyncDataOptions<LoginResponse>

@@ -3,12 +3,6 @@ import {
   AccordionItem,
   AccordionRoot,
   Button,
-  DialogBody,
-  DialogContent,
-  DialogHeader,
-  DialogRoot,
-  DialogTrigger,
-  FormLabel,
   Heading,
   IconButton,
   SelectContent,
@@ -18,8 +12,6 @@ import {
   Text,
   TextAreaInput,
   TextAreaRoot,
-  TextFieldInput,
-  TextFieldRoot,
   ToggleGroupItem,
   ToggleGroupRoot,
   TooltipContent,
@@ -29,6 +21,12 @@ import {
   type TextAreaInputComponent,
 } from '@mindenit/ui';
 import Card from '~/components/Card.vue';
+import CourseDialog from '~/components/Dialogs/CourseDialog.vue';
+import FacultyDialog from '~/components/Dialogs/FacultyDialog.vue';
+import QuestionDialog from '~/components/Dialogs/QuestionDialog.vue';
+import SubjectDialog from '~/components/Dialogs/SubjectDialog.vue';
+import TestDialog from '~/components/Dialogs/TestDialog.vue';
+import UniversityDialog from '~/components/Dialogs/UniversityDialog.vue';
 import type {
   Course,
   Faculty,
@@ -56,6 +54,12 @@ const subjects = ref<Subject[]>([]);
 const tests = ref<Test[]>([]);
 const questions = ref<Question[]>([]);
 
+const { markdown } = useMarkdown();
+const editorMode = ref<'edit' | 'preview'>('edit');
+const questionFieldValue = ref('');
+const selectedTest = ref('');
+const textareaRef = useTemplateRef<TextAreaInputComponent>('textarea');
+
 const newData = reactive({
   university: {
     name: '',
@@ -82,7 +86,10 @@ const newData = reactive({
     courseId: '',
   },
   question: {
-    selectedTest: '',
+    name: '',
+    answer: '',
+    isVerified: false,
+    testId: '',
   },
 });
 
@@ -261,12 +268,6 @@ const onReloadClick = async () => {
   }
 };
 
-const { markdown } = useMarkdown();
-const editorMode = ref<'edit' | 'preview'>('edit');
-const questionFieldValue = ref('');
-const selectedTest = ref('');
-const textareaRef = useTemplateRef<TextAreaInputComponent>('textarea');
-
 const onClick = async () => {
   const { data, status, error } = await createQuestions(
     selectedTest.value,
@@ -311,6 +312,196 @@ const reloadAll = async () => {
   await fetchData(getTests, 'tests');
   await fetchData(getQuestions, 'questions');
 };
+
+const getUniversityData = (id: string | number) => {
+  const university = universities.value.find((u) => u.id === id);
+  if (university) {
+    newData.university.name = university?.name;
+    newData.university.brief = university?.brief;
+  }
+};
+
+const editUni = async (id: string | number, payload: University) => {
+  const {
+    data,
+    status,
+    error: err,
+  } = await editUniversity(id, {
+    name: payload.name.trim(),
+    brief: payload.brief.trim(),
+  });
+  if (status.value === 'success') {
+    newData.university.name = '';
+    newData.university.brief = '';
+    cache.universities = false;
+    await fetchData(getUniversities, 'universities');
+    return;
+  }
+
+  if (status.value === 'error') {
+    error.value = err.value!.toString();
+  }
+};
+
+const getCourseData = (id: string | number) => {
+  const course = courses.value.find((c) => c.id === id);
+  if (course) {
+    newData.course.number = course.number;
+  }
+};
+
+const editCours = async (id: string | number, payload: Course) => {
+  const { data, status, error: err } = await editCourse(id, payload);
+  if (status.value === 'success') {
+    newData.course.number = 0;
+    cache.courses = false;
+    await fetchData(getCourses, 'courses');
+    return;
+  }
+
+  if (status.value === 'error') {
+    error.value = err.value!.toString();
+  }
+};
+
+const getFacultyData = (id: string | number) => {
+  const faculty = faculties.value.find((f) => f.id === id);
+  if (faculty) {
+    newData.faculty.name = faculty.name;
+    newData.faculty.universityId = faculty.universityId.toString();
+  }
+};
+
+const editFacul = async (id: string | number, payload: Faculty) => {
+  const {
+    data,
+    status,
+    error: err,
+  } = await editFaculty(id, {
+    name: payload.name.trim(),
+    universityId: Number(payload.universityId),
+  });
+  if (status.value === 'success') {
+    newData.faculty.name = '';
+    newData.faculty.universityId = '';
+    cache.faculties = false;
+    await fetchData(getFaculties, 'faculties');
+    return;
+  }
+
+  if (status.value === 'error') {
+    error.value = err.value!.toString();
+  }
+};
+
+const getSubjectData = (id: string | number) => {
+  const subject = subjects.value.find((s) => s.id === id);
+  if (subject) {
+    newData.subject.name = subject.name;
+    newData.subject.brief = subject.brief;
+    newData.subject.facultyId = subject.facultyId.toString();
+  }
+};
+
+const editSub = async (id: string | number, payload: Subject) => {
+  const {
+    data,
+    status,
+    error: err,
+  } = await editSubject(id, {
+    name: payload.name.trim(),
+    brief: payload.brief.trim(),
+    facultyId: Number(payload.facultyId),
+  });
+  if (status.value === 'success') {
+    newData.test.name = '';
+    newData.test.isVerified = false;
+    newData.test.facultyId = '';
+    newData.test.courseId = '';
+    newData.test.subjectId = '';
+    newData.test.universityId = '';
+    await fetchData(getTests, 'tests');
+    return;
+  }
+
+  if (status.value === 'error') {
+    error.value = err.value!.toString();
+  }
+};
+
+const getTestData = (id: string | number) => {
+  const test = tests.value.find((t) => t.id === id);
+  if (test) {
+    newData.test.name = test.name;
+    newData.test.isVerified = test.isVerified;
+    newData.test.courseId = test.courseId.toString();
+    newData.test.facultyId = test.facultyId.toString();
+    newData.test.universityId = test.universityId.toString();
+    newData.test.subjectId = test.subjectId.toString();
+  }
+};
+
+const editTst = async (id: string | number, payload: Test) => {
+  const {
+    data,
+    status,
+    error: err,
+  } = await editTest(id, {
+    name: payload.name.trim(),
+    isVerified: payload.isVerified,
+    facultyId: Number(payload.facultyId),
+    courseId: Number(payload.courseId),
+    universityId: Number(payload.universityId),
+    subjectId: Number(payload.subjectId),
+  });
+  if (status.value === 'success') {
+    newData.faculty.name = '';
+    newData.faculty.universityId = '';
+    cache.faculties = false;
+    await fetchData(getFaculties, 'faculties');
+    return;
+  }
+
+  if (status.value === 'error') {
+    error.value = err.value!.toString();
+  }
+};
+
+const getQuestionData = (id: string | number) => {
+  const question = questions.value.find((q) => q.id === id);
+  if (question) {
+    newData.question.name = question.name;
+    newData.question.answer = question.answer;
+    newData.question.isVerified = question.isVerified;
+    newData.question.testId = question.testId!.toString();
+  }
+};
+
+const editQuestio = async (id: string | number, payload: Question) => {
+  const {
+    data,
+    status,
+    error: err,
+  } = await editQuestion(id, {
+    name: payload.name.trim(),
+    answer: payload.answer.trim(),
+    isVerified: payload.isVerified,
+    testId: Number(payload.testId),
+  });
+  if (status.value === 'success') {
+    newData.question.name = '';
+    newData.question.answer = '';
+    newData.question.testId = '';
+    newData.question.isVerified = false;
+    cache.questions = false;
+    await fetchData(getFaculties, 'questions');
+    return;
+  }
+
+  if (status.value === 'error') {
+    error.value = err.value!.toString();
+  }
+};
 </script>
 <template>
   <div class="flex flex-col items-center gap-2">
@@ -322,50 +513,12 @@ const reloadAll = async () => {
       <template #title>Університети</template>
       <template #content>
         <div class="flex flex-col gap-2">
-          <DialogRoot v-model:open="dialogState">
-            <DialogTrigger>
-              <IconButton icon="ph:plus" />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader title="Додати університет" />
-              <DialogBody>
-                <FormLabel for="university-name">Повна назва</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="university-name"
-                    required
-                    placeholder="Введіть назву уніерситету"
-                    v-model="newData.university.name"
-                  />
-                </TextFieldRoot>
-
-                <FormLabel for="university-brief">Коротка назва</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="university-brief"
-                    required
-                    placeholder="Введіть коротку назву (ХНУРЕ, ХАІ...)"
-                    v-model="newData.university.brief"
-                  />
-                </TextFieldRoot>
-
-                <div class="flex w-full justify-start" v-if="error">
-                  <p class="text-amaranth-500">
-                    {{ error }}
-                  </p>
-                </div>
-
-                <Button
-                  @click="() => sendInfo('university')"
-                  :disabled="
-                    !newData.university.name.length ||
-                    !newData.university.brief.length
-                  "
-                  >Створити</Button
-                >
-              </DialogBody>
-            </DialogContent>
-          </DialogRoot>
+          <UniversityDialog
+            mode="create"
+            :error
+            :university="newData.university"
+            :onSubmit="() => sendInfo('university')"
+          />
           <Card v-for="university in universities" :key="university.id">
             <span>ID: {{ university.id }}</span>
             <span>Назва: {{ university.name }}</span>
@@ -385,7 +538,13 @@ const reloadAll = async () => {
                 "
               ></IconButton>
 
-              <IconButton icon="ph:pen"></IconButton>
+              <UniversityDialog
+                mode="edit"
+                :error
+                :university="newData.university"
+                :onIconClick="() => getUniversityData(university.id!)"
+                :onSubmit="() => editUni(university.id!, newData.university)"
+              />
             </div>
           </Card>
         </div>
@@ -396,42 +555,12 @@ const reloadAll = async () => {
       <template #title>Курси</template>
       <template #content>
         <div class="flex flex-col gap-2">
-          <DialogRoot v-model:open="dialogState">
-            <DialogTrigger>
-              <IconButton icon="ph:plus" />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader title="Додати курс" />
-              <DialogBody class="dark:text-white">
-                <FormLabel for="course-number">Номер курсу</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="course-number"
-                    type="number"
-                    min="1"
-                    max="6"
-                    required
-                    placeholder="Введіть номер курсу"
-                    v-model="newData.course.number"
-                  />
-                </TextFieldRoot>
-
-                <div class="flex w-full justify-start" v-if="error">
-                  <p class="text-amaranth-500">
-                    {{ error }}
-                  </p>
-                </div>
-
-                <Button
-                  @click="sendInfo('course')"
-                  :disabled="
-                    !newData.course.number || newData.course.number < 0
-                  "
-                  >Створити</Button
-                >
-              </DialogBody>
-            </DialogContent>
-          </DialogRoot>
+          <CourseDialog
+            mode="create"
+            :error
+            :course="newData.course"
+            :onSubmit="() => sendInfo('course')"
+          />
           <Card v-for="course in courses" :key="course.id">
             <span>ID: {{ course.id }}</span>
             <span>Номер курсу: {{ course.number }}</span>
@@ -446,7 +575,13 @@ const reloadAll = async () => {
                     )
                 "
               ></IconButton>
-              <IconButton icon="ph:pen"></IconButton>
+              <CourseDialog
+                mode="edit"
+                :error
+                :course="newData.course"
+                :onIconClick="() => getCourseData(course.id!)"
+                :onSubmit="() => editCours(course.id!, newData.course)"
+              />
             </div>
           </Card>
         </div>
@@ -457,65 +592,14 @@ const reloadAll = async () => {
       <template #title>Факультети</template>
       <template #content>
         <div class="flex flex-col gap-2">
-          <DialogRoot v-model:open="dialogState">
-            <DialogTrigger>
-              <IconButton
-                @click="() => fetchData(getUniversities, 'universities')"
-                icon="ph:plus"
-              />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader title="Додати факультет" />
-              <DialogBody class="dark:text-white">
-                <FormLabel for="faculty-name">Назва</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="faculty-name"
-                    required
-                    placeholder="Введіть назву факультету"
-                    v-model="newData.faculty.name"
-                  />
-                </TextFieldRoot>
-                <SelectRoot v-model="newData.faculty.universityId">
-                  <SelectTrigger placeholder="Виберіть університет" />
-                  <SelectContent>
-                    <template v-if="universities.length">
-                      <SelectItem
-                        v-for="(university, index) in universities"
-                        :key="index"
-                        :value="university.id!.toString()"
-                      >
-                        {{ university.brief }}
-                      </SelectItem>
-                    </template>
-                    <span v-else class="p-3 text-center">
-                      <Text
-                        v-show="!universities.length"
-                        size="subtitle"
-                        class="select-none"
-                        >Університети відсутні</Text
-                      >
-                    </span>
-                  </SelectContent>
-                </SelectRoot>
-
-                <div class="flex w-full justify-start" v-if="error">
-                  <p class="text-amaranth-500">
-                    {{ error }}
-                  </p>
-                </div>
-
-                <Button
-                  @click="sendInfo('faculty')"
-                  :disabled="
-                    !newData.faculty.name.length ||
-                    !newData.faculty.universityId
-                  "
-                  >Створити</Button
-                >
-              </DialogBody>
-            </DialogContent>
-          </DialogRoot>
+          <FacultyDialog
+            mode="create"
+            :error
+            :faculty="newData.faculty"
+            :universities
+            :onIconClick="() => fetchData(getUniversities, 'universities')"
+            :onSubmit="() => sendInfo('faculty')"
+          />
           <Card v-for="faculty in faculties" :key="faculty.id">
             <span>ID: {{ faculty.id }}</span>
             <span>Назва: {{ faculty.name }}</span>
@@ -531,7 +615,22 @@ const reloadAll = async () => {
                     )
                 "
               ></IconButton>
-              <IconButton icon="ph:pen"></IconButton>
+              <FacultyDialog
+                mode="edit"
+                :error
+                :faculty="newData.faculty"
+                :universities
+                :onIconClick="
+                  () => {
+                    fetchData(getUniversities, 'universities');
+                    getFacultyData(faculty.id!);
+                  }
+                "
+                :onSubmit="() => editFacul(faculty.id!, {
+                  name: newData.faculty.name,
+                  universityId: Number(newData.faculty.universityId)
+                })"
+              />
             </div>
           </Card>
         </div>
@@ -542,77 +641,14 @@ const reloadAll = async () => {
       <template #title>Предмети</template>
       <template #content>
         <div class="flex flex-col gap-2">
-          <DialogRoot v-model:open="dialogState">
-            <DialogTrigger>
-              <IconButton
-                @click="() => fetchData(getFaculties, 'faculties')"
-                icon="ph:plus"
-              />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader title="Додати предмет" />
-              <DialogBody class="dark:text-white">
-                <FormLabel for="subject-name">Назва предмету</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="subject-name"
-                    required
-                    placeholder="Введіть назву предмету"
-                    v-model="newData.subject.name"
-                  />
-                </TextFieldRoot>
-
-                <FormLabel for="subject-brief">Коротка назва</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="subject-brief"
-                    required
-                    placeholder="Введіть коротку назву (ОБД, ФВ...)"
-                    v-model="newData.subject.brief"
-                  />
-                </TextFieldRoot>
-
-                <SelectRoot v-model="newData.subject.facultyId">
-                  <SelectTrigger placeholder="Виберіть факультет" />
-                  <SelectContent>
-                    <template v-if="faculties.length">
-                      <SelectItem
-                        v-for="(faculty, index) in faculties"
-                        :key="index"
-                        :value="faculty.id!.toString()"
-                      >
-                        {{ faculty.name }}
-                      </SelectItem>
-                    </template>
-                    <span v-else class="p-3 text-center">
-                      <Text
-                        v-show="!faculties.length"
-                        size="subtitle"
-                        class="select-none"
-                        >Факультети відсутні</Text
-                      >
-                    </span>
-                  </SelectContent>
-                </SelectRoot>
-
-                <div class="flex w-full justify-start" v-if="error">
-                  <p class="text-amaranth-500">
-                    {{ error }}
-                  </p>
-                </div>
-
-                <Button
-                  @click="sendInfo('subject')"
-                  :disabled="
-                    !newData.subject.name.length ||
-                    !newData.subject.brief.length ||
-                    !newData.subject.facultyId
-                  "
-                  >Створити</Button
-                >
-              </DialogBody>
-            </DialogContent>
-          </DialogRoot>
+          <SubjectDialog
+            mode="create"
+            :error
+            :subject="newData.subject"
+            :faculties
+            :onIconClick="() => fetchData(getFaculties, 'faculties')"
+            :onSubmit="() => sendInfo('subject')"
+          />
           <Card v-for="subject in subjects" :key="subject.id">
             <span>ID: {{ subject.id }}</span>
             <span>Назва: {{ subject.name }}</span>
@@ -629,7 +665,23 @@ const reloadAll = async () => {
                     )
                 "
               ></IconButton>
-              <IconButton icon="ph:pen"></IconButton>
+              <SubjectDialog
+                mode="edit"
+                :error
+                :subject="newData.subject"
+                :faculties
+                :onIconClick="
+                  () => {
+                    fetchData(getFaculties, 'faculties');
+                    getSubjectData(subject.id!);
+                  }
+                "
+                :onSubmit="() => editSub(subject.id!, {
+                  name: newData.subject.name,
+                  brief: newData.subject.brief,
+                  facultyId: Number(newData.subject.facultyId)
+                })"
+              />
             </div>
           </Card>
         </div>
@@ -640,151 +692,24 @@ const reloadAll = async () => {
       <template #title>Тести</template>
       <template #content>
         <div class="flex flex-col gap-2">
-          <DialogRoot v-model:open="dialogState">
-            <DialogTrigger>
-              <IconButton
-                @click="
-                  () => {
-                    () => fetchData(getUniversities, 'universities');
-                    () => fetchData(getCourses, 'courses');
-                    () => fetchData(getSubjects, 'subjects');
-                    () => fetchData(getFaculties, 'faculties');
-                  }
-                "
-                icon="ph:plus"
-              />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader title="Додати тест" />
-              <DialogBody class="dark:text-white">
-                <FormLabel for="test-name">Назва тесту</FormLabel>
-                <TextFieldRoot>
-                  <TextFieldInput
-                    id="test-name"
-                    required
-                    placeholder="Введіть назву предмету"
-                    v-model="newData.test.name"
-                  />
-                </TextFieldRoot>
-
-                <FormLabel for="test-checkbox">Тест верифіковано?</FormLabel>
-                <Checkbox
-                  id="test-checkbox"
-                  v-model:checked="newData.test.isVerified"
-                />
-
-                <SelectRoot v-model="newData.test.universityId">
-                  <SelectTrigger placeholder="Виберіть університет" />
-                  <SelectContent>
-                    <template v-if="universities.length">
-                      <SelectItem
-                        v-for="(university, index) in universities"
-                        :key="index"
-                        :value="university.id!.toString()"
-                      >
-                        {{ university.brief }}
-                      </SelectItem>
-                    </template>
-                    <span v-else class="p-3 text-center">
-                      <Text
-                        v-show="!universities.length"
-                        size="subtitle"
-                        class="select-none"
-                        >Університети відсутні</Text
-                      >
-                    </span>
-                  </SelectContent>
-                </SelectRoot>
-
-                <SelectRoot v-model="newData.test.facultyId">
-                  <SelectTrigger placeholder="Виберіть факультет" />
-                  <SelectContent>
-                    <template v-if="faculties.length">
-                      <SelectItem
-                        v-for="(faculty, index) in faculties"
-                        :key="index"
-                        :value="faculty.id!.toString()"
-                      >
-                        {{ faculty.name }}
-                      </SelectItem>
-                    </template>
-                    <span v-else class="p-3 text-center">
-                      <Text
-                        v-show="!faculties.length"
-                        size="subtitle"
-                        class="select-none"
-                        >Факультети відсутні</Text
-                      >
-                    </span>
-                  </SelectContent>
-                </SelectRoot>
-
-                <SelectRoot v-model="newData.test.courseId">
-                  <SelectTrigger placeholder="Виберіть курс" />
-                  <SelectContent>
-                    <template v-if="courses.length">
-                      <SelectItem
-                        v-for="(course, index) in courses"
-                        :key="index"
-                        :value="course.id!.toString()"
-                      >
-                        {{ course.number }}
-                      </SelectItem>
-                    </template>
-                    <span v-else class="p-3 text-center">
-                      <Text
-                        v-show="!courses.length"
-                        size="subtitle"
-                        class="select-none"
-                        >Курси відсутні</Text
-                      >
-                    </span>
-                  </SelectContent>
-                </SelectRoot>
-
-                <SelectRoot v-model="newData.test.subjectId">
-                  <SelectTrigger placeholder="Виберіть предмет" />
-                  <SelectContent>
-                    <template v-if="subjects.length">
-                      <SelectItem
-                        v-for="(subject, index) in subjects"
-                        :key="index"
-                        :value="subject.id!.toString()"
-                      >
-                        {{ subject.name }}
-                      </SelectItem>
-                    </template>
-                    <span v-else class="p-3 text-center">
-                      <Text
-                        v-show="!subjects.length"
-                        size="subtitle"
-                        class="select-none"
-                        >Предмети відсутні</Text
-                      >
-                    </span>
-                  </SelectContent>
-                </SelectRoot>
-
-                <div class="flex w-full justify-start" v-if="error">
-                  <p class="text-amaranth-500">
-                    {{ error }}
-                  </p>
-                </div>
-
-                <Button
-                  @click="sendInfo('test')"
-                  :disabled="
-                    !newData.test.name.length ||
-                    !newData.test.courseId.length ||
-                    !newData.test.facultyId.length ||
-                    !newData.test.subjectId.length ||
-                    !newData.test.universityId.length
-                  "
-                  >Створити</Button
-                >
-              </DialogBody>
-            </DialogContent>
-          </DialogRoot>
+          <TestDialog
+            mode="create"
+            :error
+            :test="newData.test"
+            :universities
+            :faculties
+            :courses
+            :subjects
+            :onIconClick="
+              () => {
+                fetchData(getUniversities, 'universities');
+                fetchData(getCourses, 'courses');
+                fetchData(getSubjects, 'subjects');
+                fetchData(getFaculties, 'faculties');
+              }
+            "
+            :onSubmit="() => sendInfo('test')"
+          />
           <Card v-for="test in tests" :key="test.id">
             <span>ID: {{ test.id }}</span>
             <span>Назва: {{ test.name }}</span>
@@ -804,7 +729,32 @@ const reloadAll = async () => {
                     )
                 "
               ></IconButton>
-              <IconButton icon="ph:pen"></IconButton>
+              <TestDialog
+                mode="edit"
+                :error
+                :test="newData.test"
+                :universities
+                :faculties
+                :courses
+                :subjects
+                :onIconClick="
+                  () => {
+                    fetchData(getUniversities, 'universities');
+                    fetchData(getCourses, 'courses');
+                    fetchData(getSubjects, 'subjects');
+                    fetchData(getFaculties, 'faculties');
+                    getTestData(test.id!)
+                  }
+                "
+                :onSubmit="() => editTst(test.id!, {
+                  name: newData.test.name,
+                  isVerified: newData.test.isVerified,
+                  courseId: Number(newData.test.courseId),
+                  facultyId: Number(newData.test.facultyId),
+                  universityId: Number(newData.test.universityId),
+                  subjectId: Number(newData.test.subjectId,)
+                })"
+              />
             </div>
           </Card>
         </div>
@@ -963,7 +913,25 @@ const reloadAll = async () => {
                     )
                 "
               ></IconButton>
-              <IconButton icon="ph:pen"></IconButton>
+              <QuestionDialog
+                mode="edit"
+                :error
+                :question="newData.question"
+                :tests
+                :onIconClick="
+                  () => {
+                    fetchData(getFaculties, 'questions');
+                    getQuestionData(question.id!)
+                  }
+                "
+                :onSubmit="() => editQuestio(question.id!, {
+                  name: newData.question.name,
+                  answer: newData.question.answer,
+                  isVerified: newData.question.isVerified,
+                  testId: Number(newData.question.testId),
+
+                })"
+              />
             </div>
           </Card>
         </div>
